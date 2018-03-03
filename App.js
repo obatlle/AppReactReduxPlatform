@@ -10,6 +10,54 @@ import promise from 'redux-promise'
 import {createLogger} from 'redux-logger'
 import reducer from './app/reducers'
 
+import {
+  ApolloProvider,
+  createNetworkInterface,
+  ApolloClient,
+} from 'react-apollo';
+import {SubscriptionClient} from 'subscriptions-transport-ws';
+import { addGraphQLSubscriptions } from 'add-graphql-subscriptions';
+import { getUser, loadUserAsync } from 'react-native-authentication-helpers';
+
+import Graphcool from './app/constants/Graphcool';
+
+
+
+
+const networkInterface = createNetworkInterface({
+  uri: Graphcool.simpleEndpoint,
+});
+
+networkInterface.use([
+  {
+    applyMiddleware(req, next) {
+      if (!req.options.headers) {
+        req.options.headers = {};
+      }
+      const user = getUser();
+      req.options.headers.authorization = user ? `Bearer ${user.token}` : null;
+      next();
+    },
+  },
+]);
+
+const wsClient = new SubscriptionClient(Graphcool.subscriptionEndpoint, {
+  reconnect: true,
+  connectionParams: {
+    authToken: getUser() && getUser().token,
+  },
+});
+
+const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
+  networkInterface,
+  wsClient
+);
+
+const client = new ApolloClient({
+  networkInterface: networkInterfaceWithSubscriptions,
+});
+
+
 export default class App extends React.Component {
 
 
@@ -34,7 +82,9 @@ export default class App extends React.Component {
 
     return (
       <Provider store={store}>
-        <AppContainer />
+        <ApolloProvider client={client}>
+          <AppContainer />
+        </ApolloProvider>
       </Provider>
     );
   }

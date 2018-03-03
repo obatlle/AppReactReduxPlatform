@@ -1,0 +1,117 @@
+# projectId: cjc9fjhy84z7801752ikhzrsl
+# version: 5
+
+type File @model {
+  contentType: String!
+  createdAt: DateTime!
+  id: ID! @isUnique
+  name: String!
+  secret: String! @isUnique
+  size: Int!
+  updatedAt: DateTime!
+  url: String! @isUnique
+}
+
+type User @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  username: String
+  firstName: String
+  lastName: String
+  userImage: String
+  status: Int
+  loginType: String
+  mediaSource: String
+  city: String
+  countryId: String
+  latitude: Float
+  longitude: Float
+  cars: [Car!]! @relation(name: "CarUser")
+  tripsJoined: [TripJoined!]! @relation(name: "JoinedTripsUser")
+  tripsCreated: [TripCreated!]! @relation(name: "CreatedTripUser")
+  email: String @isUnique
+  password: String
+}
+
+type TripJoined @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  userFrom: User! @relation(name: "JoinedTripsUser")
+  trips: [Trip!]! @relation(name: "TripOnJoinedTrips")
+  ratings: [RateTripJoined!]! @relation(name: "RateTripJoined")
+}
+
+type TripCreated @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  userFrom: User! @relation(name: "CreatedTripUser")
+  trips: [Trip!]! @relation(name: "TripOnCreatedTrips")
+  ratings: [RateTripCreated!]! @relation(name: "RateTripCreated")
+}
+
+type Trip @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  origin: String!
+  originCountryId: String
+  originLat: Float
+  originLng: Float
+  destination: String!
+  destinationCountryId: String
+  destinationLat: Float
+  destinationLng: Float
+  price: Float
+  currency: String
+  seats: Int
+  status: Int
+  car: Car @relation(name: "CarTrip")
+  driver: TripCreated! @relation(name: "TripOnCreatedTrips")
+  travelers: [TripJoined!]! @relation(name: "TripOnJoinedTrips")
+  arrivalTime: DateTime
+  departureTime: DateTime!
+  distance: Float
+  duration: Int
+}
+
+type RateTripJoined @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  trip: TripJoined! @relation(name: "RateTripJoined")
+  status: Int
+  rate: Float!
+  comment: String
+  latitude: Float
+  longitude: Float
+}
+
+type RateTripCreated @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  trip: TripCreated! @relation(name: "RateTripCreated")
+  status: Int
+  rate: Float!
+  comment: String
+  latitude: Float
+  longitude: Float
+}
+
+type Car @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  maker: String
+  model: String
+  color: String
+  plate: String
+  userFrom: User @relation(name: "CarUser")
+  trips: [Trip!]! @relation(name: "CarTrip")
+  latitude: Float
+  longitude: Float
+  seats: Int
+}
